@@ -1,0 +1,27 @@
+---
+
+- name: Install podman packages
+  ansible.builtin.package:
+    name: "{{ podman_packages }}"
+    state: "present"
+      
+- name: Download podman default configs
+  ansible.builtin.get_url:
+    url: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0644"
+    force: true
+  loop:
+    - src: "https://src.fedoraproject.org/rpms/containers-common/raw/main/f/registries.conf"
+      dest: "/etc/containers/registries.conf"
+    - src: "https://src.fedoraproject.org/rpms/containers-common/raw/main/f/default-policy.json"
+      dest: "/etc/containers/policy.json"
+      
+- name: Install podman pipx apps
+  environment:
+    PIPX_HOME: /opt/pipx
+    PIPX_BIN_DIR: /usr/local/bin
+  community.general.pipx:
+    name: "{{ item }}"
+  loop: "{{ podman_pipx_apps }}"
+  
